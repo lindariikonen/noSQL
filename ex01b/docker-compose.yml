@@ -1,0 +1,78 @@
+version: '3'
+
+services:
+
+#
+# Application
+#
+
+  app:
+
+    # TO RUN YOUR CODE (e.g.):
+    # ------------------------
+    # docker compose run --rm app
+    # ... or ...
+    # bash first   : docker compose run --rm app bash
+    # and then app : python -B main.py
+
+    # TO RUN CODE TO BE REVIEWED (e.g.):
+    # ----------------------------------
+    # docker compose run --rm app python -B main.py --review=1
+    # ... or ...
+    # bash first   : docker compose run --rm app bash
+    # and then app : python -B main.py --review=1
+
+    image: nosql-2024:ex01b
+    build:
+      dockerfile: ./Dockerfile
+    command: python -B main.py
+    volumes:
+      - ./app:/home/app
+    environment:
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongo}
+    profiles:
+      - do-not-start-by-default
+
+#
+# Single Node DB
+#
+
+  mongo:
+
+    # TO START ALL MONGO CONTAINERS
+    # -----------------------------
+    # docker compose up -d    # to see log messages omit '-d'
+
+    # TO SHUT DOWN ALL MONGO CONTAINERS
+    # ---------------------------------
+    # docker compose down 
+
+    # TO RUN MONGO SHELL IN A MONGO CONTAINER
+    # ---------------------------------------
+    # docker compose exec mongo mongosh 
+
+    image: mongo:7.0
+    ports:
+      - 27017:27017
+
+#
+# Replica Set
+#
+
+  mongo0:
+    image: mongo:7.0
+    command: ["--replSet", "rs"]
+    # ports:
+    #   - 27018:27017
+
+  mongo1:
+    image: mongo:7.0
+    command: ["--replSet", "rs"]
+    # ports:
+    #   - 27019:27017
+
+  mongo2:
+    image: mongo:7.0
+    command: ["--replSet", "rs"]
+    # ports:
+    #   - 27020:27017
