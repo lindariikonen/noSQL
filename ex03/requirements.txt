@@ -1,0 +1,9 @@
+python-dotenv
+langchain
+openai
+langchain-openai
+langchainhub
+youtube-search
+ollama
+langchain-community
+cohere==4.46

@@ -1,0 +1,89 @@
+version: '3'
+
+services:
+
+  app:
+
+    # TO RUN YOUR CODE (e.g.):
+    # ------------------------
+    # docker compose run --rm app
+    # ... or ...
+    # bash first   : docker compose run --rm app bash
+    # and then app : python -B main.py
+
+    # TO RUN CODE TO BE REVIEWED (e.g.):
+    # ----------------------------------
+    # docker compose run --rm app python -B main.py --review=1
+    # ... or ...
+    # bash first   : docker compose run --rm app bash
+    # and then app : python -B main.py --review=1
+
+    image: nosql-2024:ex03
+    build:
+      dockerfile: ./Dockerfile
+    command: python -B main.py
+    volumes:
+      - ./app:/home/app
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - COHERE_API_KEY=${COHERE_API_KEY}
+
+    profiles:
+      - do-not-start-by-default
+
+  
+  #
+  # docker compose up -d ollama
+  # docker compose exec ollama bash
+  # docker compose exec ollama ollama run llama2
+  #
+
+  ollama:
+    image: ollama/ollama
+    ports: 
+    - 11434:11434
+    volumes:
+      - ollama:/root/.ollama
+
+volumes:
+  ollama:
+    name: ollama
+
+
+# ```
+# root@77bc0febac71:/# ollama
+# Usage:
+#   ollama [flags]
+#   ollama [command]
+
+# Available Commands:
+#   serve       Start ollama
+#   create      Create a model from a Modelfile
+#   show        Show information for a model
+#   run         Run a model
+#   pull        Pull a model from a registry
+#   push        Push a model to a registry
+#   list        List models
+#   cp          Copy a model
+#   rm          Remove a model
+#   help        Help about any command
+
+# Flags:
+#   -h, --help      help for ollama
+#   -v, --version   Show version information
+# ```
+
+
+# ```
+# >>> /?
+# Available Commands:
+#   /set            Set session variables
+#   /show           Show model information
+#   /load <model>   Load a session or model
+#   /save <model>   Save your current session
+#   /bye            Exit
+#   /?, /help       Help for a command
+#   /? shortcuts    Help for keyboard shortcuts
+
+# Use """ to begin a multi-line message.
+# ```
