@@ -1,0 +1,4 @@
+python-dotenv
+cassandra-driver
+prettytable
+PyYAML

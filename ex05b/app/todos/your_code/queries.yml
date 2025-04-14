@@ -1,0 +1,198 @@
+
+# --
+# Queries A
+#
+
+qa_1: >
+  CREATE TABLE IF NOT EXISTS videos_by_title_year (
+    title text,
+    added_year int,
+    added_date timestamp,
+    description text,
+    user_id uuid,
+    video_id uuid,
+    PRIMARY KEY ((title, added_year)));
+
+qa_2: > # don't change
+  COPY d1-videos_by_title_year 
+
+qa_3: >
+  SELECT title, added_year, added_date, user_id, video_id
+  FROM datadb300.videos_by_title_year
+  WHERE title = 'Introduction To Apache Cassandra' AND added_year = 2014
+
+qa_4: >
+  SELECT description
+  FROM datadb300.videos_by_title_year
+  WHERE title = 'Introduction To Apache Cassandra' AND added_year = 2014
+
+qa_5: >
+  SELECT description
+  FROM datadb300.videos_by_title_year
+  WHERE title = 'Introduction To Apache Cassandra'
+
+# --
+# Queries B
+#
+
+qb_1: > # don't change
+  CREATE TABLE IF NOT EXISTS bad_videos_by_tag_year (
+    tag text,
+    added_year int,
+    added_date timestamp,
+    title text,
+    description text,
+    user_id uuid,
+    video_id timeuuid,
+    PRIMARY KEY ((video_id))
+  )
+
+qb_2: > # don't change
+  COPY d2-bad_videos_by_tag_year
+
+qb_3: > # Fill in the PRIMARY KEY and CLUSTERING ORDER BY
+  CREATE TABLE IF NOT EXISTS videos_by_tag_year ( 
+    tag text,
+    added_year int,
+    video_id timeuuid,
+    added_date timestamp,
+    description text,
+    title text,
+    user_id uuid,
+    PRIMARY KEY (tag, added_year, video_id)
+  ) 
+  WITH CLUSTERING ORDER BY (added_year DESC, video_id DESC)
+
+qb_4: > # don't change
+  COPY d2-videos_by_tag_year
+
+qb_5: >
+  SELECT *
+  FROM datadb300.videos_by_tag_year
+  WHERE tag = 'trailer' AND added_year = 2015
+
+qb_6: >
+  SELECT *
+  FROM datadb300.videos_by_tag_year
+  WHERE added_year < 2015
+
+qb_7: >
+  SELECT *
+  FROM datadb300.videos_by_tag_year
+  WHERE tag = 'trailer' AND added_year < 2016
+
+# --
+# Queries C
+#
+
+qc_1: &qc_1 >
+  CREATE TYPE IF NOT EXISTS video_encoding (
+    encoding TEXT,
+    height INT,
+    width INT,
+    bit_rates SET<TEXT>
+  );
+
+qc_2: > # Complete the following CREATE TABLE ...
+  CREATE TABLE IF NOT EXISTS videos_by_actor ( 
+    actor TEXT,
+    added_date TIMESTAMP, 
+    video_id TIMEUUID, 
+    character_name TEXT, 
+    description TEXT,
+    encoding FROZEN<video_encoding>, 
+    tags SET<TEXT>,
+    title TEXT,
+    user_id UUID,
+    PRIMARY KEY (actor, added_date, video_id, character_name) 
+  ) 
+  WITH CLUSTERING ORDER BY (added_date DESC, video_id DESC)
+
+qc_3: > # don't change
+  COPY d3-videos_by_actor
+
+qc_4: >
+  SELECT title, added_date
+  FROM datadb300.videos_by_actor
+  WHERE actor = 'Leonardo DiCaprio'
+  LIMIT 10
+
+qc_5: > # Complete the following CREATE TABLE ...
+  CREATE TABLE IF NOT EXISTS videos_by_genre ( 
+    genre TEXT,
+    added_date TIMESTAMP, 
+    video_id TIMEUUID, 
+    description TEXT,
+    encoding FROZEN<video_encoding>, 
+    tags SET<TEXT>,
+    title TEXT,
+    user_id UUID,
+    PRIMARY KEY (genre, added_date, video_id)
+  ) 
+  WITH CLUSTERING ORDER BY (added_date DESC, video_id DESC)
+
+qc_6: > # don't change
+  COPY d4-videos_by_genre
+
+qc_7: >
+  SELECT title, added_date
+  FROM datadb300.videos_by_genre
+  WHERE genre = 'Musical'
+  LIMIT 10;
+
+qc_8: >
+  SELECT COUNT(*)
+  FROM datadb300.videos_by_genre
+  WHERE genre = 'Musical'
+
+
+# --
+# Queries D
+#
+
+qd_1: *qc_1 # don't change
+
+qd_2: > # don't change
+  CREATE TABLE IF NOT EXISTS videos (
+    video_id TIMEUUID,
+    added_date TIMESTAMP,
+    description TEXT,
+    title TEXT,
+    user_id UUID,
+    PRIMARY KEY (video_id)
+  )
+
+qd_3: > # don't change
+  COPY d0-videos
+
+qd_4: > # don't change
+  TRUNCATE videos
+
+qd_5: >
+  ALTER TABLE datadb300.videos
+  ADD tags SET<TEXT>;
+
+qd_6: > # don't change
+  COPY d5-videos
+
+qd_7: >
+  SELECT tags
+  FROM datadb300.videos
+  LIMIT 1;
+
+qd_8: >
+  ALTER TABLE datadb300.videos
+  ADD encoding FROZEN<video_encoding>;
+
+qd_9: > # don't change
+  COPY d6-videos_encoding
+
+qd_10: >
+  SELECT encoding
+  FROM datadb300.videos
+  LIMIT 1;
+
+qd_11: >
+  SELECT video_id, added_date, title, user_id, tags, encoding
+  FROM datadb300.videos
+  LIMIT 10;

@@ -1,0 +1,5 @@
+python-dotenv
+cassandra-driver
+prettytable
+PyYAML
+cqlsh

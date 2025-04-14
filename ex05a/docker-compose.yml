@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+
+  app:
+
+    # TO RUN YOUR CODE (e.g.):
+    # ------------------------
+    # docker compose run --rm app
+    # ... or ...
+    # bash first   : docker compose run --rm app bash
+    # and then app : python -B main.py
+
+    # TO RUN CODE TO BE REVIEWED (e.g.):
+    # ----------------------------------
+    # docker compose run --rm app python -B main.py --review=1
+    # ... or ...
+    # bash first   : docker compose run --rm app bash
+    # and then app : python -B main.py --review=1
+
+    image: nosql-2024:ex05a
+    build:
+      dockerfile: ./Dockerfile
+    command: python -B main.py
+    volumes:
+      - ./app:/home/app
+    environment:
+      - SECURE_CONNECT_BUNDLE=${SECURE_CONNECT_BUNDLE:-}
+      - APPLICATION_TOKEN=${APPLICATION_TOKEN:-}
+      - CASSANDRA_HOST=${CASSANDRA_HOST:-}
+    profiles:
+      - do-not-start-by-default
+
+  cassandra:
+    image: cassandra:4.1
+    ports: 
+    - 9042:9042
+
+    # TO START CASSANDRA CONTAINER
+    # ----------------------------
+    # docker compose up -d    # to see log messages omit '-d'
+
+    # TO SHUT DOWN CASSANDRA CONTAINER
+    # --------------------------------
+    # docker compose down 
+
+    # TO RUN CQL SHELL IN CASSANDRA CONTAINER
+    # ---------------------------------------
+    # docker compose exec cassandra cqlsh

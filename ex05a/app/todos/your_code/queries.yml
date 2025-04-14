@@ -1,0 +1,144 @@
+# --
+# Queries A
+#
+
+qa_0: > 
+  DROP TABLE IF EXISTS datadb300.videos;
+
+qa_1: &qa_1 > 
+  CREATE KEYSPACE IF NOT EXISTS datadb300
+  WITH REPLICATION = {
+    'class' : 'SimpleStrategy',
+    'replication_factor' : 1 };
+
+qa_2: &qa_2
+  USE datadb300;
+
+qa_3: >
+  CREATE TABLE datadb300.videos (
+    video_id timeuuid,
+    added_date timestamp,
+    title text,
+    PRIMARY KEY (video_id));
+
+qa_4: >
+  INSERT INTO datadb300.videos (video_id, added_date, title)
+  VALUES (1645ea59-14bd-11e5-a993-8138354b7e31, '2014-01-29', 'Cassandra History');
+
+qa_5: >
+  INSERT INTO datadb300.videos (video_id, added_date, title)
+  VALUES (245e8024-14bd-11e5-9743-8238356b7e32, '2012-04-03',  'Cassandra & SSDs');
+
+
+qa_6: >
+  DELETE FROM datadb300.videos
+  WHERE video_id IN (1645ea59-14bd-11e5-a993-8138354b7e31, 245e8024-14bd-11e5-9743-8238356b7e32);
+
+qa_7: >
+  BEGIN BATCH
+  INSERT INTO datadb300.videos (video_id, added_date, title) VALUES (1645ea59-14bd-11e5-a993-8138354b7e31, '2014-01-29', 'Cassandra History');
+  INSERT INTO datadb300.videos (video_id, added_date, title) VALUES (245e8024-14bd-11e5-9743-8238356b7e32, '2012-04-03', 'Cassandra & SSDs');
+  INSERT INTO datadb300.videos (video_id, added_date, title) VALUES (3452f7de-14bd-11e5-855e-8738355b7e3a, '2013-03-17', 'Cassandra Intro');
+  INSERT INTO datadb300.videos (video_id, added_date, title) VALUES (4845ed97-14bd-11e5-8a40-8338255b7e33, '2013-10-16', 'DataStax Studio');
+  INSERT INTO datadb300.videos (video_id, added_date, title) VALUES (5645f8bd-14bd-11e5-af1a-8638355b8e3a, '2013-04-16', 'What is DataStax Enterprise?');
+  APPLY BATCH;
+
+qa_8: >
+  SELECT COUNT(*) FROM datadb300.videos;
+
+
+# --
+# Queries B
+#
+
+qb_0: &qb_0 > 
+  DROP TABLE IF EXISTS datadb300.videos_by_tag
+
+qb_1: *qa_1  # don't change
+
+qb_2: *qa_2  # don't change
+
+qb_3: >
+  SELECT TOKEN(video_id), video_id
+  FROM datadb300.videos;
+
+qb_4: >
+  CREATE TABLE datadb300.videos_by_tag (
+  tag text,
+  video_id timeuuid,
+  added_date timestamp,
+  title text,
+  PRIMARY KEY (tag, video_id));
+
+qb_5: &qb_5 >
+  BEGIN BATCH
+  INSERT INTO datadb300.videos_by_tag (tag, video_id, added_date, title) VALUES ('cassandra', 1645ea59-14bd-11e5-a993-8138354b7e31, '2014-01-29', 'Cassandra History');
+  INSERT INTO datadb300.videos_by_tag (tag, video_id, added_date, title) VALUES ('cassandra', 245e8024-14bd-11e5-9743-8238356b7e32, '2012-04-03', 'Cassandra & SSDs');
+  INSERT INTO datadb300.videos_by_tag (tag, video_id, added_date, title) VALUES ('cassandra', 3452f7de-14bd-11e5-855e-8738355b7e3a, '2013-03-17', 'Cassandra Intro');
+  INSERT INTO datadb300.videos_by_tag (tag, video_id, added_date, title) VALUES ('datastax', 4845ed97-14bd-11e5-8a40-8338255b7e33, '2013-10-16', 'DataStax Studio');
+  INSERT INTO datadb300.videos_by_tag (tag, video_id, added_date, title) VALUES ('datastax', 5645f8bd-14bd-11e5-af1a-8638355b8e3a, '2013-04-16', 'What is DataStax Enterprise?');
+  APPLY BATCH;
+
+qb_6: >
+  SELECT *
+  FROM datadb300.videos_by_tag
+  WHERE tag = 'cassandra'
+
+qb_7: >
+  SELECT *
+  FROM datadb300.videos_by_tag
+  WHERE tag = 'datastax'
+
+qb_8: >
+  SELECT *
+  FROM datadb300.videos_by_tag
+  WHERE title = 'Cassandra Intro'
+
+qb_9: >
+  SELECT TOKEN(tag), video_id, tag
+  FROM datadb300.videos_by_tag;
+
+
+# --
+# Queries C
+#
+
+qc_0: *qb_0 # don't change
+
+qc_1: *qa_1 # don't change
+
+qc_2: *qa_2 # don't change
+
+qc_3: >
+  CREATE TABLE datadb300.videos_by_tag (
+  tag text,
+  added_date timestamp,
+  video_id timeuuid,
+  title text,
+  PRIMARY KEY (tag, added_date, video_id))
+  WITH CLUSTERING ORDER BY (added_date DESC, video_id DESC);
+
+qc_4: *qb_5 # don't change
+
+qc_5: >
+  SELECT *
+  FROM datadb300.videos_by_tag;
+
+qc_6: >
+  SELECT *
+  FROM datadb300.videos_by_tag
+  ORDER BY added_date ASC;
+
+qc_7: >
+  SELECT *
+  FROM datadb300.videos_by_tag
+  WHERE tag = 'cassandra'
+  ORDER BY added_date ASC
+  ALLOW FILTERING;
+
+qc_8: >
+  SELECT *
+  FROM datadb300.videos_by_tag
+  WHERE tag = 'cassandra' AND added_date >= '2013-01-01'
+  ORDER BY added_date ASC
+  ALLOW FILTERING;
